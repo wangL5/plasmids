@@ -1,0 +1,115 @@
+---
+title: "Plasmids Benchmarking"
+output: html_document
+date: "2025-04-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Read in file and load in libraries
+```{r}
+library(tidyverse)
+library(janitor)
+
+CAMI2_benchmark_data <- read_excel("dataset_processing_notes.xlsx", sheet = "CAMI2_benchmark")
+```
+
+### Look at dataset
+```{r}
+head(CAMI2_benchmark_data)
+```
+
+# clean up column names
+```{r}
+CAMI2_data_clean <- CAMI2_benchmark_data %>%
+  clean_names()
+
+head(CAMI2_data_clean)
+
+```
+
+## check for missing values
+```{r}
+summary(CAMI2_data_clean)
+```
+# reshape the data
+```{r}
+CAMI2_long <- CAMI2_data_clean %>% 
+  pivot_longer(cols = -sample,  # pivot everything excempt sample column 
+               names_to = c("classifier", "assembler", "metric"),  # what we're changing column names to 
+               names_pattern = "(.*)_(.*)_(.*)",  # names separated by _ 
+               values_to = "value")
+head(CAMI2_long)
+```
+## save cleaned up long file
+```{r}
+library(readr)
+write_tsv(CAMI2_long, "CAMI2_benchmark_data_long.tsv")
+```
+
+## calculate benchmarking metrics 
+```{r}
+library(dplyr)
+library(tidyr)
+
+CAMI2_benchmarking_metrics <- CAMI2_long %>%
+  # pivot again to get metrics as columns 
+  pivot_wider(names_from = metric, values_from = value) %>%
+  mutate(
+    accuracy = (tp + tn) / (tp + tn + fp + fn),
+    precision = tp / (tp + fp),
+    recall = tp / (tp + fn),
+    specificity = tn / (tn + fp),
+    false_positive_rate = fp / (tn + fp),
+    f1_score = 2 * (precision * recall) / (precision + recall)
+  )
+```
+
+## view table
+```{r}
+print(CAMI2_benchmarking_metrics)
+```
+
+
+## save table
+```{r}
+write_tsv(CAMI2_benchmarking_metrics, "CAMI2_benchmarking_metrics.tsv")
+```
+
+## figures
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# precision-recall curve
+CAMI2_PR_curve <- ggplot(CAMI2_benchmarking_metrics, aes(x = recall, y = precision, color = Classifier)) +
+  geom_point(alpha = 0.7, size = 2) +
+  geom_line(aes(group = interaction(Classifier, assembler)), size = 1) +
+  facet_wrap(~ assembler) +
+  labs(
+    title = "Precision-Recall Curve by Assembler and Classifier",
+    x = "Recall",
+    y = "Precision",
+    color = "Classifier"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
+
+```
+
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}  
+# echo = FALSE 
+# prevents printing of the R code that generated the plot
+plot(pressure)
+```
+
+
