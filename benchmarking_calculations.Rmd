@@ -312,40 +312,199 @@ ggplot(long_summary, aes(x = interaction(classifier, assembler, sep = " + "), y 
 ```{r}
 library(dplyr)
 library(tidyr)
-library(fmsb)
+library(fmsb)  # radar plot
 library(tibble)
 
-# not sure radar would be a good idea because there are so many combinations 
+# map colors
+classifier_colors <- c(
+  dmc = "#F0A0FF",        # amethyst
+  genomad = "#0075DC",    # blue
+  plasx05 = "#2BCE48",    # green
+  plasx075 = "#FFCC99",   # honeydew
+  plasx09 = "#808080",    # iron
+  platon = "#94FFB5"      # jade
+)
 
-# Summarize metrics
+# pull out relevant metrics
 radar_data <- CAMI2_benchmarking_metrics %>%
+  filter(assembler == "mpspades",
+         classifier %in% names(classifier_colors)) %>%
   group_by(classifier, assembler) %>%
-  summarise(across(c(accuracy, precision, recall, specificity, false_positive_rate, f1_score), mean, .names = "mean_{.col}"), .groups = "drop")
+  summarise(across(c(accuracy, precision, recall, specificity, false_positive_rate), mean, .names = "mean_{.col}"), .groups = "drop")
 
-# For radar plot, rows = groups, columns = metrics
+# create radar-compatible df
 radar_df <- radar_data %>%
   unite("combo", classifier, assembler, sep = "_") %>%
   column_to_rownames("combo") %>%
-  select(starts_with("mean_"))
+  select(mean_accuracy, mean_precision, mean_recall, mean_specificity, mean_false_positive_rate)
 
-# fmsb needs a max and min row
+# add max and min rows
 radar_df <- rbind(
-  rep(1, ncol(radar_df)),  # max values
-  rep(0, ncol(radar_df)),  # min values
+  rep(1, ncol(radar_df)),  # max
+  rep(0, ncol(radar_df)),  # min
   radar_df
 )
 
-# Plot example (just showing first 3 combos for clarity)
-radarchart(radar_df[1:5, ],
-           axistype = 1,
-           pcol = c("red", "blue", "green"),
-           plwd = 2,
-           plty = 1,
-           cglcol = "grey", 
-           cglty = 1,
-           axislabcol = "grey",
-           vlcex = 0.8)
-legend("topright", legend = rownames(radar_df)[3:5], col = c("red", "blue", "green"), lty = 1, lwd = 2)
+# rename radar_df column names
+colnames(radar_df) <- c("Accuracy", "Precision", "Recall", "Specificity", "False Positive Rate")
+
+# assign colors in correct order
+plot_colors <- classifier_colors[radar_data$classifier]
+
+# adjust the margins
+par(mar = c(1,1,2,2))  # bottom, left, top, right
+
+# save
+#png("CAMI2_radar_all.png", width=1000, height=800, res=300)
+
+# Plot
+radarchart(radar_df,
+           axistype = 1,  # standard axes labels and grid lines 
+           pcol = plot_colors,  # colors I identified
+           plwd = 2,  # line width
+           plty = 1,  # line type (solid, dashed, dotted)
+           cglcol = "grey",  # spider web color
+           cglty = 1,  # line type of grid, same as plty
+           axislabcol = "grey",  # color of number labels on concentric rings
+           vlab = c("Accuracy", "Precision", "Recall", "Specificity", "FPR"),  # custom labels instead of using the column names 
+           vlcex = 0.8)  # text size - 80% of the default
+
+legend("topright", legend = radar_data$classifier, col = plot_colors, lty = 1, lwd = 2, bty = "n", cex = 0.8)  # 0.8 = 80% of default size 
+
+title("Plasmid classifiers performance parameters (metaplasmidSPAdes assemblies)", cex.main=1)
+
 
 ```
+
+### using ggradar instead 
+```{r}
+library(ggradar)
+library(dplyr)
+library(scales)
+
+# Define classifier list and colors
+classifiers <- c("dmc", "genomad", "plasx05", "plasx075", "plasx09", "platon")
+colors <- c("dmc" = "#F0A0FF",        # amethyst
+            "genomad" = "#0075DC",    # blue
+            "plasx05" = "#2BCE48",    # green
+            "plasx075" = "#FFCC99",   # honeydew
+            "plasx09" = "#808080",    # iron
+            "platon" = "#94FFB5")     # jade
+
+# Filter and prepare radar data (same as before)
+radar_data <- CAMI2_benchmarking_metrics %>%
+  filter(assembler == "mpspades", classifier %in% classifiers) %>%
+  group_by(classifier) %>%
+  summarise(across(c(accuracy, precision, recall, specificity, false_positive_rate), mean), .groups = "drop") %>%
+  rename_with(~ gsub("mean_", "", .x))  # clean names 
+
+# Rescale data (ggradar expects data to be between 0 and 1)
+#radar_data_rescaled <- radar_data %>%
+#  mutate(across(-classifier, scales::rescale))  # Rescale only numeric columns
+
+# Convert the data to tidy format for ggradar
+ggradar_df <- radar_data %>%
+  rename(group = classifier)
+
+axis_labels <- c("Accuracy", "Precision", "Recall", "Specificity", "FPR")
+
+# Plot with ggradar
+g <- ggradar(ggradar_df,
+             group.colours = colors,
+             axis.labels = axis_labels,
+             axis.label.size = 4,   # Font size for axis labels
+             group.line.width = 1,  # Line width for classifiers
+             group.point.size = 3,  # Point size at the data locations
+             background.circle.colour = "white", # Background color of the circle
+             legend.position = "right",
+             legend.text.size = 12)  # Position the legend
+
+# Show the plot
+print(g)
+
+```
+### save plot
+```{r}
+# save plot 
+library(ggplot2)
+ggsave("CAMI2_radar_all.png", g, width = 8, height = 6)
+```
+
+
+## individual radar plots
+
+```{r}
+library(ggradar)
+library(dplyr)
+library(scales)
+library(patchwork)
+
+# Define classifier list and colors
+classifiers <- c("dmc", "genomad", "plasx05", "plasx075", "plasx09", "platon")
+colors <- c("dmc" = "#F0A0FF",        # amethyst
+            "genomad" = "#0075DC",    # blue
+            "plasx05" = "#2BCE48",    # green
+            "plasx075" = "#FFCC99",   # honeydew
+            "plasx09" = "#808080",    # iron
+            "platon" = "#94FFB5")     # jade
+
+# New axis labels
+new_axis_labels <- c("Accuracy", "Precision", "Recall", "Specificity", "FPR")
+
+# Filter and prepare radar data
+radar_data <- CAMI2_benchmarking_metrics %>%
+  filter(assembler == "mpspades", classifier %in% classifiers) %>%
+  group_by(classifier) %>%
+  summarise(across(c(accuracy, precision, recall, specificity, false_positive_rate), mean), .groups = "drop") %>%
+  rename_with(~ gsub("mean_", "", .x))  # Optional clean-up
+
+# Rescale data (ggradar expects data between 0 and 1)
+#radar_data_rescaled <- radar_data %>%
+#  mutate(across(-Classifier, scales::rescale))  # Rescale only numeric columns
+
+# Convert the data to tidy format for ggradar
+ggradar_df <- radar_data %>%
+  rename(group = classifier)
+
+# Set custom axis labels by changing column names in the data
+colnames(ggradar_df)[-1] <- new_axis_labels  # Rename all columns except the first one (group)
+
+# Create a list to store each plot
+plots <- list()
+
+# Generate radar plots for each classifier
+for (clf in classifiers) {
+  clf_data <- ggradar_df %>%
+    filter(group == clf)
+  
+  p <- ggradar(clf_data,
+               group.colours = colors[clf],
+               axis.label.size = 3,   # font size for axis labels
+               grid.label.size = 3,   # font size for grid labels (0, 50, 100)
+               group.line.width = 1,  # line width for classifiers
+               group.point.size = 3,  # point size at the data locations
+               background.circle.colour = "white",  # Background color of the circle
+               legend.title = "classifier",
+               legend.position = "bottom")   # Position the legend 
+  p <- p + ggtitle(clf) + theme(
+    plot.title = element_text(hjust=0.5, size=10, face = "bold")
+  )
+  
+  plots[[clf]] <- p  # Store the plot
+}
+
+# Combine all plots into a single figure
+combined_plot <- plots[["dmc"]] + plots[["genomad"]] + plots[["plasx05"]] +
+  plots[["plasx075"]] + plots[["plasx09"]] + plots[["platon"]] +
+  plot_layout(ncol = 3)  # Arrange in a 3-column layout
+
+# Show the combined plot
+print(combined_plot)
+
+```
+### save
+```{r}
+ggsave("CAMI2_individual_radar_plots.png", combined_plot, width=12, height=8)
+```
+
 
