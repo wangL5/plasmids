@@ -1,2 +1,1 @@
-sacct -j 577683 -o jobid,ncpus,start,end,MaxRSS,MaxVMsize,nodelist --starttime=12/01
-/24 --endtime=12/30/24
+sacct -j jobid -o jobid,ncpus,start,end,MaxRSS,MaxVMsize,nodelist --starttime=MM/DD/YY --endtime=MM/DD/YY
