@@ -23,7 +23,7 @@ SAMPLE_ID=$((SLURM_ARRAY_TASK_ID - 1))
 ASSEMBLY="${WORKDIR}/CAMI2_${SAMPLE_ID}_megahit/final.contigs.fa"
 
 # output files
-OUT="${WORKDIR}/mobrecon_megahit_${SAMPLE_ID}/"
+OUT="${WORKDIR}/plasmidfinder_megahit_${SAMPLE_ID}/"
 
 # run mob recon
 mob_recon --infile "$ASSEMBLY" --outdir "$OUT"

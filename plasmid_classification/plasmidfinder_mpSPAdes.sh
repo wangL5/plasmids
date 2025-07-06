@@ -25,8 +25,6 @@ ASSEMBLY="${WORKDIR}/CAMI2_${SAMPLE_ID}_mpSPAdes/scaffolds.fasta"
 # output files
 OUT="${WORKDIR}/plasmidfinder_mpSPAdes_${SAMPLE_ID}/"
 
-mkdir "${WORKDIR}/plasmidfinder_mpSPAdes_${SAMPLE_ID}/"
-
 # run plasmidfinder
 
 plasmidfinder.py -i "$ASSEMBLY" -o "$OUT"

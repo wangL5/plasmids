@@ -1,0 +1,46 @@
+---
+title: "contig_size_graph"
+output: html_document
+date: "2025-05-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Precision/Recall Graph for CAMI2 Samples
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(pals)
+```
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+CAMI2_benchmarking_metrics_TP_contigs <- read.table("CAMI2_benchmarking_metrics_TPcontigs.tsv.txt", sep="\t", header=TRUE)
+```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# precision-recall curve
+CAMI2_PR_curve_TP_contigs <- ggplot(CAMI2_benchmarking_metrics_TP_contigs, aes(x = recall, y = precision, color = classifier)) + scale_color_manual(values = unname(alphabet())) +
+  geom_point(aes(size = TP_contig_size), alpha = 0.7) +
+  facet_wrap(~ assembler) +
+  labs(
+    title = "Precision vs Recall by Assembler and Classifier",
+    x = "Recall",
+    y = "Precision",
+    color = "Classifier",
+    size = "TP contig size"
+  ) +
+  scale_size_continuous(range = c(2, 10)) + 
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "right",
+    plot.title = element_text(hjust=0.5)
+  )
+```
+
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+plot(CAMI2_PR_curve_TP_contigs)
+```

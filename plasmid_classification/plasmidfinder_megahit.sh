@@ -25,8 +25,6 @@ ASSEMBLY="${WORKDIR}/CAMI2_${SAMPLE_ID}_megahit/final.contigs.fa"
 # output files
 OUT="${WORKDIR}/plasmidfinder_megahit_${SAMPLE_ID}/"
 
-mkdir "${WORKDIR}/plasmidfinder_megahit_${SAMPLE_ID}/"
-
 # run plasmidfinder
 
 plasmidfinder.py -i "$ASSEMBLY" -o "$OUT"

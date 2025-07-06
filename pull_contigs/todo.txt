@@ -1,1 +1,0 @@
-write benchmarking_parameters_forloop.py to have user plug in inputs instead of hardcoding
