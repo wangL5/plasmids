@@ -1,0 +1,142 @@
+---
+title: "megahit_minimap2_mapping_contig_distr"
+format: html
+date: 7/29/2025
+editor: visual
+---
+
+## Mapping megahit assembly contigs back to plasmid reference genomes using minimap2
+
+Visualizing contig mapping to see the fragmentation of certain reference genomes
+
+Load in the data
+
+```{r}
+
+mapping_data <- read.csv("megahit_minimap_combined_mapping_data.txt", sep="\t")
+```
+
+Figure - kind of like a dotted histogram
+
+Y-axis = Num_Query_Sequence
+
+X-axis = Target_Sequence
+
+color = Sample.Number
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+
+megahit_mappings <- ggplot(mapping_data,
+                           aes(x=Num_Query_Sequences,
+                               y=Target_Sequence,
+                               fill=as.factor(Sample.Number))) + 
+  geom_dotplot(binwidth = 0.2) + labs(fill = "Sample Number", y = "Number of contigs mapped", x = "Reference plasmids", title = "Number of megahit contigs mapped per plasmid reference") +
+  theme(axis.text.x = element_blank()) + coord_flip()
+```
+
+```{r}
+megahit_mappings
+```
+
+Dotplot above is too busy - try heatmap
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(tibble)
+
+matrix_data <- mapping_data %>%
+  pivot_wider(names_from = Sample.Number, 
+              values_from = Num_Query_Sequences,
+              values_fill = 0) %>%  # fill missing values with 0
+  column_to_rownames("Target_Sequence") %>%
+  as.matrix()
+```
+
+```{r}
+library(pheatmap)
+pheatmap(matrix_data,
+         main = "Megahit contigs mapped to plasmid reference genomes",
+         show_rownames = FALSE,
+         cluster_cols = FALSE)
+         
+```
+
+Removing reference plasmids that have 1 contig mapped to it across all sampels
+
+```{r}
+library(dplyr)
+
+filtered_data <- mapping_data %>%
+  group_by(Target_Sequence) %>%
+  filter(!all(Num_Query_Sequences == 1)) %>%
+  ungroup()
+```
+
+```{r}
+
+ggplot(filtered_data,
+       aes(x=Num_Query_Sequences,
+           y=Target_Sequence,
+           fill=as.factor(Sample.Number))) + 
+  geom_dotplot(binwidth = 0.2) + labs(fill = "Sample Number", y = "Reference Plasmids", x = "Number of contigs mapped", title = "Number of megahit contigs mapped per plasmid reference (filtered)") + theme(axis.text.y = element_blank())
+
+```
+
+Try heatmap with the filtered data
+
+```{r}
+
+filtered_matrix_data <- filtered_data %>%
+  pivot_wider(names_from = Sample.Number, 
+              values_from = Num_Query_Sequences,
+              values_fill = 0) %>%  # fill missing values with 0) %>%
+  column_to_rownames("Target_Sequence") %>%
+  as.matrix()
+
+```
+
+```{r}
+pheatmap(filtered_matrix_data,
+         main = "Megahit contigs mapped to plasmid reference genomes (filtered)",
+         show_rownames = FALSE,
+         cluster_cols = FALSE)
+```
+
+How many reference plasmids remain when filtered out all the plasmids with only 1 contig mapped to it across all samples?
+
+```{r}
+nrow(filtered_matrix_data)
+
+# 91 out of 108
+```
+
+What does the heatmap look like w/o filling NAs with 0s?
+
+```{r}
+
+filtered_matrix_data_wNA <- filtered_data %>%
+  pivot_wider(names_from = Sample.Number, 
+              values_from = Num_Query_Sequences) %>%
+  column_to_rownames("Target_Sequence") %>%
+  as.matrix()
+  
+```
+
+```{r}
+pheatmap(filtered_matrix_data_wNA,
+         main = "Megahit contigs mapped to plasmid reference genomes (filtered)",
+         show_rownames = FALSE,
+         cluster_cols = FALSE)
+```
+
+Save some files
+
+```{r}
+
+write.table(filtered_matrix_data, "filtered_minimap_megahit_mapping_matrix.txt", sep = "\t", row.names = TRUE, quote = FALSE)
+```

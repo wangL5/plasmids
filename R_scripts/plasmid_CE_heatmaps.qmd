@@ -1,0 +1,39 @@
+---
+title: "CAMI2_CE_heatmaps"
+format: html
+editor: visual
+---
+
+```{r}
+mpspades_data <- read.csv("mpspades_heatmap.csv", row.names = 1)
+megahit_data <- read.csv("megahit_heatmap.csv", row.names=1)
+```
+
+```{r}
+# read in annotation files
+
+plasmid_CE_annotations <- read.csv("plasmid_CE_metadata.txt", row.names=1, sep="\t")
+```
+
+```{r}
+library(pheatmap)
+library(RColorBrewer)
+
+#color_scheme <- colorRampPalette(c("red", "yellow", "blue"))(100)
+
+annotation_colors <- list(contig_length = colorRampPalette(brewer.pal(3,'PuBu'))(100),
+                          coverage = colorRampPalette(brewer.pal(3, 'Spectral'))(100))
+
+pheatmap(mpspades_data, 
+         main = "Metaplasmidspades Plasmid Reference Detection Rates (%)", 
+         show_rownames = FALSE, 
+         color = colorRampPalette(brewer.pal(3, 'RdYlBu'))(100),
+         annotation_row = plasmid_CE_annotations,
+         annotation_names_row = F)  
+pheatmap(megahit_data, 
+         main = "Megahit Plasmid Reference Detection Rates (%)",
+         show_rownames = FALSE, 
+         color = colorRampPalette(brewer.pal(3, 'RdYlBu'))(100),
+         annotation_row = plasmid_CE_annotations,
+         annotation_names_row = F)
+```
