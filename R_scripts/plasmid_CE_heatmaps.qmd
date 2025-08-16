@@ -1,0 +1,287 @@
+---
+title: "CAMI2_CE_heatmaps"
+format: html
+editor: visual
+---
+
+Visualizing detection rates (binary - detected Y/N) calculated from 10 CAMI2 samples for each plasmid classifier. Y axis = 108 CAMI2 plasmids, X axis = classifier tool.
+
+Annotated with metadata of interest.
+
+```{r}
+mpspades_data <- read.csv("mpspades_heatmap.csv", row.names = 1)
+megahit_data <- read.csv("megahit_heatmap.csv", row.names=1)
+```
+
+```{r}
+# read in metadata
+
+plasmid_CE_annotations <- read.csv("plasmid_CE_metadata.txt", row.names=1, sep="\t")
+```
+
+```{r}
+# grab only metadata of interest for annotation
+
+filtered_plasmid_CE_annotations <- subset(plasmid_CE_annotations, select = c(num_gene_calls, GC_content))
+
+# other columns: num_gene_calls, GC_content, contig_length, coverage, mpspades_genomad_0_block, mpspades_genomad_plasx_0_block, megahit_genomad_0_block, megahit_genomad_plasx_0_block
+# contig length and coverage are of the original plasmid circular element reference genome, not of the assemblies
+# GC content and num_gene_calls are also of the original plasmid circular element reference genome
+# for genomad_plasx_0 block, I took CEs with 0 detection by genomad and plasx (0.9 threshold) across all CAMI2 samples for that classifier
+```
+
+```{r}
+library(pheatmap)
+library(RColorBrewer)
+
+#color_scheme <- colorRampPalette(c("red", "yellow", "blue"))(100)
+
+annotation_colors <- list(contig_length = colorRampPalette(brewer.pal(3,'PuBu'))(100),
+                          coverage = colorRampPalette(brewer.pal(3, 'Spectral'))(100))
+
+pheatmap(mpspades_data, 
+         main = "Metaplasmidspades Plasmid Reference Detection Rates (%)", 
+         show_rownames = FALSE, 
+         color = colorRampPalette(brewer.pal(3, 'RdYlBu'))(100),
+         annotation_row = filtered_plasmid_CE_annotations,
+         annotation_names_row = F)  
+pheatmap(megahit_data, 
+         main = "Megahit Plasmid Reference Detection Rates (%)",
+         show_rownames = FALSE, 
+         color = colorRampPalette(brewer.pal(3, 'RdYlBu'))(100),
+         annotation_row = filtered_plasmid_CE_annotations,
+         annotation_names_row = F)
+```
+
+To further visualize these plasmid circular element groupings (detected, undetected_genomad, undetected_genomad_plasx \[cut off at 0.9)\], some boxplots of various metadata:
+
+```{r}
+plasmid_CE_annotations <- read.csv("plasmid_CE_metadata.txt", sep="\t")
+```
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+
+plasmid_CE_long <- plasmid_CE_annotations %>% 
+  select(mpspades_detection, GC_content, num_gene_calls, coverage) %>%
+  pivot_longer(cols = c(GC_content, num_gene_calls, coverage),
+               names_to = "metric",
+               values_to = "value")
+```
+
+```{r}
+# drop #N/A
+
+plasmid_CE_long_filtered <- plasmid_CE_long[plasmid_CE_long$mpspades_detection != "#N/A", ]
+```
+
+metaplasmidspades boxplots comparing plasmid reference genome metadata
+
+```{r}
+ggplot(plasmid_CE_long_filtered, aes(x = mpspades_detection, y = value, fill = mpspades_detection)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("detected" = "blue", 
+                               "undetected_genomad" = "darkorange",
+                               "undetected_genomad_plasx" = "red")) +
+  labs(title = "Plasmid characteristics by detection group (mpspades)", fill = "Detection Status") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  facet_wrap(~ metric, scales = "free_y", nrow = 1,
+             labeller = labeller(metric = c("coverage" = "Coverage", 
+                                           "GC_content" = "GC Content (%)", 
+                                           "num_gene_calls" = "Number of Gene Calls")))
+```
+
+megahit boxplots comparing plasmid reference genome metadata
+
+```{r}
+plasmid_CE_long_megahit <- plasmid_CE_annotations %>% 
+  select(megahit_detection, GC_content, num_gene_calls, coverage) %>%
+  pivot_longer(cols = c(GC_content, num_gene_calls, coverage),
+               names_to = "metric",
+               values_to = "value")
+
+ggplot(plasmid_CE_long_megahit, aes(x = megahit_detection, y = value, fill = megahit_detection)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("detected" = "blue", 
+                               "undetected_genomad" = "darkorange",
+                               "undetected_genomad_plasx" = "red")) +
+  labs(title = "Plasmid characteristics by detection group (megahit)", fill = "Detection Status") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  facet_wrap(~ metric, scales = "free_y", nrow = 1,
+             labeller = labeller(metric = c("coverage" = "Coverage", 
+                                           "GC_content" = "GC Content (%)", 
+                                           "num_gene_calls" = "Number of Gene Calls")))
+```
+
+ANOVA test on whether the means of cov, GC cont, or gene calls are different between the groups:
+
+```{r}
+library(dplyr)
+
+# str(plasmid_CE_annotations)
+# summary(plasmid_CE_annotations)
+# table(plasmid_CE_annotations$mpspades_detection)
+table(plasmid_CE_annotations$megahit_detection)
+```
+
+```{r}
+# remove the NA for megahit analysis
+
+plasmid_CE_annotations_mpspades <- plasmid_CE_annotations[plasmid_CE_annotations$mpspades_detection != "#N/A", ]
+```
+
+Test for homogeneity of variance of datasets - will need a non-parametric alternative to ANOVA/MANOVA if the values do not have equal variance
+
+```{r}
+library(car)
+# test for homogeneity of variances
+leveneTest(num_gene_calls ~ mpspades_detection, data= plasmid_CE_annotations_mpspades)
+
+#variances are not significantly different
+```
+
+```{r}
+leveneTest(GC_content ~ mpspades_detection, data = plasmid_CE_annotations_mpspades)
+# variances are significantly different
+# p = 0.047
+```
+
+```{r}
+leveneTest(coverage ~ mpspades_detection, data = plasmid_CE_annotations_mpspades) 
+# p = 0.221
+```
+
+```{r}
+
+leveneTest(num_gene_calls ~ megahit_detection, data = plasmid_CE_annotations)
+# variances are not significantly different
+```
+
+```{r}
+leveneTest(GC_content ~ megahit_detection, data = plasmid_CE_annotations)
+```
+
+```{r}
+leveneTest(num_gene_calls ~ megahit_detection, data = plasmid_CE_annotations)
+```
+
+```{# kruskal-wallis test}
+
+library(FSA)
+```
+
+```{r}
+#mpspades
+
+kruskal.test(num_gene_calls ~ mpspades_detection, data = plasmid_CE_annotations_mpspades)
+
+# 	Kruskal-Wallis rank sum test
+
+# data:  num_gene_calls by mpspades_detection
+#Kruskal-Wallis chi-squared = 17.824, df = 2, p-value = 0.0001348
+
+```
+
+```{r}
+kruskal.test(GC_content ~ mpspades_detection, data = plasmid_CE_annotations_mpspades)
+
+#	Kruskal-Wallis rank sum test
+
+# data:  GC_content by mpspades_detection
+# Kruskal-Wallis chi-squared = 0.62001, df = 2, p-value = 0.7334
+
+```
+
+```{r}
+kruskal.test(coverage ~ mpspades_detection, data = plasmid_CE_annotations_mpspades)
+
+# Kruskal-Wallis rank sum test
+
+ # data:  coverage by mpspades_detection
+# Kruskal-Wallis chi-squared = 2.9808, df = 2, p-value = 0.2253
+```
+
+```{r}
+kruskal.test(num_gene_calls ~ megahit_detection, data = plasmid_CE_annotations)
+#Kruskal-Wallis rank sum test
+
+#data:  num_gene_calls by megahit_detection
+#Kruskal-Wallis chi-squared = 18.328, df = 2, p-value = 0.0001048
+```
+
+```{r}
+kruskal.test(GC_content ~ megahit_detection, data = plasmid_CE_annotations)
+
+#	Kruskal-Wallis rank sum test
+
+# data:  GC_content by megahit_detection
+# Kruskal-Wallis chi-squared = 7.9509, df = 2, p-value = 0.01877
+
+```
+
+```{r}
+kruskal.test(coverage ~ megahit_detection, data = plasmid_CE_annotations)
+
+# Kruskal-Wallis rank sum test
+
+# data:  coverage by megahit_detection
+# Kruskal-Wallis chi-squared = 0.61995, df = 2, p-value = 0.7335
+
+```
+
+Actually, since gene calls and coverage had homogeneous variances - could do ANOVA on those:
+
+```{r}
+# for mpspades
+mpspades_gene_calls_anova <- aov(num_gene_calls ~ mpspades_detection, data = plasmid_CE_annotations_mpspades) 
+# p = 0.01
+
+oneway.test(GC_content ~ mpspades_detection, data = plasmid_CE_annotations_mpspades,
+            var.equal = FALSE) 
+# p = 0.54
+
+oneway.test(coverage ~ mpspades_detection, data = plasmid_CE_annotations_mpspades,
+            var.equal = TRUE)
+#p = 0.255
+```
+
+```{r}
+TukeyHSD(mpspades_gene_calls_anova, conf.level = 0.95)
+```
+
+
+```{r}
+# for megahit
+
+# oneway.test(coverage ~ megahit_detection, data = plasmid_CE_annotations, var.equal = TRUE)
+# p = 0.28
+
+megahit_GC_anova <- oneway.test(GC_content ~ megahit_detection, data = plasmid_CE_annotations,
+            var.equal = FALSE)
+# p = 0.0001 from Welch's ANOVA
+
+megahit_gene_call_anova <- aov(num_gene_calls ~ megahit_detection, data = plasmid_CE_annotations)
+# p = 0.011 from ANOVA
+```
+
+```{r}
+TukeyHSD(megahit_gene_call_anova, conf.level = 0.95)
+```
+```{r}
+library(rstatix)
+games_howell_test(plasmid_CE_annotations, GC_content ~ megahit_detection, conf.level = 0.95, detailed = FALSE)
+```
+

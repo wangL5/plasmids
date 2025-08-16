@@ -1,0 +1,6 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+plasx_CEs/*.txt
+R_scripts/out_of_date_figures
