@@ -1,0 +1,25 @@
+		precision_genome	precision_genome	recall_genome	recall_genome	f1_score_genome	f1_score_genome
+		mean	std	mean	std	mean	std
+classifier	assembler						
+DMC	megahit	0.002	0.0	0.846	0.026	0.003	0.0
+DMC	mpSPAdes	0.89	0.044	0.851	0.022	0.869	0.025
+genomad	megahit	0.047	0.005	0.567	0.021	0.088	0.009
+genomad	mpSPAdes	0.909	0.044	0.591	0.028	0.716	0.022
+mobrecon	megahit	0.004	0.002	0.038	0.007	0.008	0.003
+mobrecon	mpSPAdes	0.565	0.252	0.029	0.008	0.054	0.015
+plasclass	megahit	0.001	0.0	0.342	0.029	0.001	0.0
+plasclass	mpSPAdes	0.829	0.067	0.307	0.04	0.447	0.044
+plasme	megahit	0.002	0.0	0.182	0.011	0.003	0.0
+plasme	mpSPAdes	0.741	0.122	0.158	0.018	0.26	0.03
+plasmidfinder	megahit	0.014	0.045	0.001	0.003	0.002	0.006
+plasmidfinder	mpSPAdes	0.0	0.0	0.0	0.0	0.0	0.0
+plasx05	megahit	0.081	0.011	0.807	0.028	0.147	0.018
+plasx05	mpSPAdes	0.939	0.032	0.806	0.034	0.866	0.014
+plasx075	megahit	0.2	0.02	0.677	0.025	0.308	0.023
+plasx075	mpSPAdes	0.929	0.041	0.668	0.021	0.777	0.022
+plasx09	megahit	0.317	0.029	0.547	0.021	0.4	0.023
+plasx09	mpSPAdes	0.919	0.041	0.541	0.025	0.681	0.027
+platon	megahit	0.146	0.021	0.888	0.063	0.25	0.033
+platon	mpSPAdes	0.807	0.058	1.0	0.0	0.892	0.036
+vv	megahit	0.095	0.012	0.176	0.02	0.123	0.013
+vv	mpSPAdes	0.894	0.062	0.189	0.02	0.311	0.027

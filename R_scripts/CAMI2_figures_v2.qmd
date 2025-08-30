@@ -1,0 +1,41 @@
+---
+title: "CAMI2 Benchmarking Figures"
+author: "Lu Wang"
+date: "2025-08-30"
+format: pdf
+editor: visual
+---
+
+## CAMI2 Marine Metagenome Benchmarking Figures
+
+Data was generated as follows:
+
+1.  Assembled CAMI2 marine environmental metagenome reads with megahit and metaplasmidSPAdes
+2.  Ran assembled contigs against 9 plasmid classifiers
+3.  To identify "True Plasmid" contigs, used minimap2 to map plasmid contigs back against CAMI2 reference genomes
+4.   Calculated \# of True Positives (TP), True Negatives (TN), and False Negatives (FN) and calculated Precision, Recall, and F-1 Score
+
+Read in data
+
+```{r}
+#| echo: false
+
+per_contig_data <- read.csv("per_contig_classification_results.txt", header=TRUE, sep="\t")
+per_genome_data <- read.csv("per_CE_plasmid_classification_results.txt", header=TRUE, sep="\t")
+```
+
+#### Per contig data: 
+
+1.  Mapped all contigs against CAMI2 plasmid reference genomes, and obtained a list of "True Plasmid" contigs
+2.  Comparing the list of "True Plasmid" contigs against the list of contigs from all 9 plasmid classifiers, obtained a list of the total number of TP, TN, and FN for each plasmid classifier
+3.  Calculated precision, recall, and F-1 score for each plasmid classifier
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+#### Per plasmid reference genome data:
+
+1.  Mapped all contigs against CAMI2 plasmid reference genomes, and obtained a list of "True Plasmid" contigs
+2.  
