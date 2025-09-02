@@ -1,30 +1,120 @@
 ---
-title: "CAMI2 Benchmarking Figures"
+title: "CAMI2 Benchmarking Data"
 author: "Lu Wang"
 date: "2025-08-30"
 format: pdf
 editor: visual
 ---
 
-## CAMI2 Marine Metagenome Benchmarking Figures
+## CAMI2 Marine Metagenome Benchmarking
 
 Data was generated as follows:
 
 1.  Assembled CAMI2 marine environmental metagenome reads with megahit and metaplasmidSPAdes
 2.  Ran assembled contigs against 9 plasmid classifiers
 3.  To identify "True Plasmid" contigs, used minimap2 to map plasmid contigs back against CAMI2 reference genomes
-4.   Calculated \# of True Positives (TP), True Negatives (TN), and False Negatives (FN) and calculated Precision, Recall, and F-1 Score
+4.  Calculated \# of True Positives (TP), True Negatives (TN), and False Negatives (FN) and calculated Precision, Recall, and F-1 Score
 
-Read in data
+### CAMI2 Assembly
+
+#### CAMI2 Assembly Metrics
+
+CAMI2 marine metagenome reads were assembled with megahit and megaplasmidSPAdes assemblers.
+
+| Sample Num | megahit               | metaplasmidSPAdes  |
+|------------|-----------------------|--------------------|
+| 0          | N50 = 1257, n = 51721 | N50 = 4679, n = 40 |
+| 1          | N50 = 1108, n = 71820 | N50 = 4964, n = 30 |
+| 2          | N50 = 992, n = 91063  | N50 = 5121, n = 30 |
+| 3          | N50 = 1027, n = 83748 | N50 = 4679, n = 31 |
+| 4          | N50 = 1372, n = 38594 | N50 = 4771, n = 24 |
+| 5          | N50 = 1191, n = 42925 | N50 = 6573, n = 14 |
+| 6          | N50 = 1164, n = 61432 | N50 = 5121, n = 26 |
+| 7          | N50 = 1246, n = 55098 | N50 = 5423, n = 25 |
+| 8          | N50 = 884, n = 97838  | N50 = 4504, n = 32 |
+| 9          | N50 = 1259, n = 49681 | N50 = 5062, n = 25 |
+
+Megahit assemblies were more fragmented than metaplasmidSPAdes. Minimap2 data showed 1:1 mapping between metaplasmidSPAdes contigs and CAMI2 plasmid reference genomes. Mapping data between megahit contigs and CAMI2 plasmid reference genomes showed a range of assembly fragmentation, from 1 contig mapped per reference genome, to the highest of 33 contigs mapped per reference genome.
+
+Of the 108 plasmid reference genomes from CAMI2, metaplasmidSPAdes assemblies had at least one contig map to 107 reference genomes, while megahit had at least one contig map to all 108 plasmid reference genomes. (metaplasmidSPAdes missing RNODE_116_length_4192_cov_3.28201)
+
+#### Megahit contig fragmentation
+
+```{r}
+#| echo: False
+
+mapping_data <- read.csv("megahit_minimap_combined_mapping_data.txt", sep="\t")
+```
+
+```{r}
+#| echo: False
+library(ggplot2)
+library(viridis)
+library(scales)
+library(dplyr)
+
+mapping_data_transformed <- mapping_data %>%
+  mutate(
+    # log scale for dot size - confirmed no 0s 
+    log_val = log(Num_Query_Sequences),
+    Sample_Number = factor(Sample.Number))
+```
+
+```{r}
+#| echo: False
+mapping_dot_plot <- ggplot(mapping_data_transformed, aes(x = Sample_Number, y=Target_Sequence)) + geom_point(aes(size = log_val, color = Num_Query_Sequences), alpha = 0.8) +
+  scale_color_viridis_c(
+    name = "Number of Contigs\n(log scale)",
+    trans = "log10", # transformation of the color scale
+    breaks = c(1, 2, 5, 10, 20, 35),
+    option = "plasma", # color scale
+    guide = guide_colorbar(barwidth = 1, barheight=8)
+  ) +
+  scale_size_continuous(
+    name = "Count (log scale)",
+    range = c(0.5, 5),
+    breaks = log(c(1,2,5,10,20,35)),
+    labels = c("1", "2", "5", "10", "20", "35"),
+    guide = "none"
+  ) + 
+  theme_minimal() + 
+  theme(
+    axis.text.y = element_blank(),
+    plot.title = element_text(hjust=0.5)) + 
+  labs (
+    title = "Megahit Contigs per CAMI2 Plasmid Reference Genome",
+    y = "CAMI2 Plasmid Reference Genomes (108)",
+    x = "CAMI2 Marine Metagenome Samples"
+  )
+  
+```
+
+```{r}
+#| echo: False
+print(mapping_dot_plot)
+```
+
+This figure shows that while most of the megahit contig mappings back to the CAMI2 reference genomes were 1:1, there were other reference genomes that were fragmented during megahit assembly. Mapping coverage ranged from X to X%. **###REMAKE AS HEATMAP###**
+
+#### Megahit contig recruitment plots \### MAKE RECRUITMENT PLOT or COVERAGE PLOT \#
+
+```{r}
+#| echo: False
+
+# insert recruitment plot of most fragmented reference genomes 
+```
+
+### CAMI2 Plasmid Classifier Benchmarking
+
+Read in benchmarking data
 
 ```{r}
 #| echo: false
 
 per_contig_data <- read.csv("per_contig_classification_results.txt", header=TRUE, sep="\t")
-per_genome_data <- read.csv("per_CE_plasmid_classification_results.txt", header=TRUE, sep="\t")
 ```
 
-#### Per contig data: 
+#### Benchmarking: contig level
 
 1.  Mapped all contigs against CAMI2 plasmid reference genomes, and obtained a list of "True Plasmid" contigs
 2.  Comparing the list of "True Plasmid" contigs against the list of contigs from all 9 plasmid classifiers, obtained a list of the total number of TP, TN, and FN for each plasmid classifier
@@ -32,10 +122,142 @@ per_genome_data <- read.csv("per_CE_plasmid_classification_results.txt", header=
 
 ```{r}
 #| echo: false
-2 * 2
+
+library(ggplot2)
+
+clean_labels = c("DMC" = "DeepMicroClass", "genomad" = "geNomad", "mobrecon" = "MobRecon", "plasclass" = "PlasClass", "plasme" = "PLASMe", "plasmidfinder" = "Plasmidfinder", "plasx05" = "PlasX (0.5)", "plasx075" = "PlasxX (0.75)", "plasx09" = "Plasx (0.9)", "platon" = "Platon", "vv" = "viralVerify")
+
+f1_score_boxplot <- ggplot(per_contig_data, aes(x = classifier, y = f1_score, fill = assembler)) + geom_boxplot(position = position_dodge(width=0.8)) + 
+  scale_fill_manual(values=c("orange", "cornflowerblue"), labels = c("megahit", "metaplasmidSPAdes")) + 
+  theme_minimal(base_size = 14) +
+  labs(title = "CAMI2 Plasmid Benchmarking: F1 Score by Classifier and Assembler", x = "", y = "", fill = "",
+  ) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    strip.text = element_text(face = "bold"),
+    plot.title = element_text(hjust=0.5),
+    panel.grid.major.x = element_blank(),
+    legend.position="bottom"
+  ) + 
+  scale_x_discrete(labels = clean_labels)
+plot(f1_score_boxplot)
 ```
 
-#### Per plasmid reference genome data:
+F-1 score for all 9 plasmid classification tools compared against megahit and metaplasmidSPAdes assembly datasets (showing PlasX at 3 score threshold cut off points). No output for plasmidfinder because there were no True Positives predicted for either assembly dataset. F-1 score better for all classifiers using metaplasmidSPAdes assembly dataset. Plasx with 0.5 cut off had the highest F-1 score.
 
-1.  Mapped all contigs against CAMI2 plasmid reference genomes, and obtained a list of "True Plasmid" contigs
-2.  
+```{r}
+#| echo: False
+
+# CAMI2 Precision-Recall Figure
+library(ggplot2)
+library(dplyr)
+library(pals)
+
+CAMI2_PR_curve <- ggplot(per_contig_data, aes(x = recall, y = precision, color = classifier)) + scale_color_manual(values=unname(alphabet()), labels = clean_labels) +
+  # clean_labels defined above in F1 boxplot 
+  geom_point(alpha = 0.7, size = 2) +
+  facet_wrap(~ assembler, labeller = as_labeller(c("mpSPAdes" = "metaplasmidSPAdes", "megahit" = "megahit"))) +
+  labs(
+    title = "Precision vs Recall by Assembler and Classifier",
+    x = "Recall",
+    y = "Precision",
+    color = "Classifier"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "bottom",
+    plot.title = element_text(hjust=0.5)
+  )
+plot(CAMI2_PR_curve)
+
+```
+
+-   Every classifier outperformed plasmid classification using metaplasmidSPAdes assemblies compared to megahit assemblies. Caveat - would be careful about direct comparison though - metaplasmidSPAdes only had \~100s of contigs to work with (since there were 200 circular elements total), while megahit had 400k-500k contigs to work with.
+
+-   The best performing classifiers using metaplasmidSPades assemblies: **DeepMicroClass, PlasX, geNomad**. However - where DeepMicroClass fails (and where most of these fail) is when encountering megahit assemblies - resulting in false positives that reduce its precision to nearly 0 for all 10 CAMI2 samples. The classifier most robust to megahit - fragmented assemblies - is PlasX.
+
+-   **\### need to include log transformed contig sizes here \###**
+
+#### Benchmarking: plasmid reference genomes
+
+108 plasmid reference genomes in the CAMI2 dataset. These heatmaps show, for each reference genome, how many times they were detected by each of the plasmid classifiers, out of the 10 CAMI2 samples.
+
+```{r}
+#| echo: false
+
+# read in data
+mpspades_data <- read.csv("mpspades_heatmap.csv", row.names = 1)
+megahit_data <- read.csv("megahit_heatmap.csv", row.names=1)
+```
+
+```{r}
+#| echo: false
+# renaming the matrix columns 
+
+colnames(mpspades_data) <- clean_labels[colnames(mpspades_data)]
+colnames(megahit_data) <- clean_labels[colnames(megahit_data)]
+
+```
+
+```         
+```
+
+```{r}
+#| echo: false
+library(pheatmap)
+library(RColorBrewer)
+```
+
+```{r}
+#| echo: false
+
+annotation_colors <- list(contig_length = colorRampPalette(brewer.pal(3,'PuBu'))(100),
+                          coverage = colorRampPalette(brewer.pal(3, 'Spectral'))(100))
+
+pheatmap(mpspades_data, 
+         main = "MetaplasmidSPAdes Plasmid Reference Detection Rates (%)", 
+         show_rownames = FALSE, 
+         color = colorRampPalette(brewer.pal(3, 'RdYlBu'))(100))
+         # annotation_row = filtered_plasmid_CE_annotations,
+         #annotation_names_row = F)  
+```
+
+```{r}
+
+#| echo: false
+pheatmap(megahit_data, 
+         main = "Megahit Plasmid Reference Detection Rates (%)",
+         show_rownames = FALSE, 
+         color = colorRampPalette(brewer.pal(3, 'RdYlBu'))(100))
+         #annotation_row = filtered_plasmid_CE_annotations,
+         #annotation_names_row = F)
+```
+
+### Plasmid reference genome investigation
+
+Of the top performing classifiers (DeepMicroClass, geNomad, and PlasX), geNomad and PlasX shared groups of contigs that they were unable to classify. (Interestingly, the DeepMicroClass used the CAMI2 dataset as one of its benchmarking datasets). Why were certain reference genomes classified over others? What genomic traits, if any, are present in one group vs. the other? Looked into plasmid reference genome characteristics to determine
+
+Tried: Mobsuite (mobtyper) and PLSDB did not provide sufficient information.
+
+What do geNomad and plasX algorithms have in common? They both use gene families at some point in their analysis. geNomad also has a deep learning model that uses one-hot encoded tetranucleotides to detect 4mer patterns.
+
+#### Reference genome characteristics: 
+
+##### Number of Genes:
+
+-   GC content
+
+-   diversity in gene families? or type of gene families? (plasx data)
+
+    -   Group 1 vs Group 2:
+
+        -   Are there less pfam/cog families? Are there more mmseqs families?
+
+        -   Is it more likely for it not to hit a pfam/cog/mmseqs family at all?
+
+        -   Are there certain pfam/cog/mmseqs families that are found more frequently in Group 2?
+
+-   Tetranucleotide frequencies
+
+    -   after calculating the tetranucleotide frequencies - map them somehow?
