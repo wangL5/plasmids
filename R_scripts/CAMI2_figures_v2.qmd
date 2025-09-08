@@ -242,7 +242,7 @@ Tried: Mobsuite (mobtyper) and PLSDB did not provide sufficient information.
 
 What do geNomad and plasX algorithms have in common? They both use gene families at some point in their analysis. geNomad also has a deep learning model that uses one-hot encoded tetranucleotides to detect 4mer patterns.
 
-#### Reference genome characteristics: 
+#### Reference genome characteristics:
 
 ##### Number of Genes:
 
