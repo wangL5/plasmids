@@ -1,0 +1,77 @@
+---
+title: "2025_09_07_CE_gene_fams_chi_square"
+format: pdf
+editor: visual
+---
+
+## Chi\^2 Test of Independence for Plasmid Circular Element Gene Families
+
+Gene families derived from PlasX analysis: pfam, cog, or de novo mmseqs clustered gene families
+
+Question: Are there any gene families that are more represented in a detection group?
+
+Part of the larger question to understand why genomad and plasx were unable to detect 2 clusters of CAMI2 plasmids
+
+TLDR: chi squared test did not pan out due to not meeting the data requirements/assumptions for chi squared distribution. womp womp.
+
+```{r}
+#| echo: false
+
+gene_fam_metadata = read.csv("gene_fams_metadata.txt", sep="\t")
+```
+
+Create matrices. Picking the columns: accession + mpspades_detection, and accession + megahit_detection. When using table() to create contingency tables, the first argument will be the rows, and second argument will be the columns.
+
+```{r}
+#| echo: false
+
+library(dplyr)
+```
+
+Create matrices/contingency tables
+
+```{r}
+#| echo: false
+
+# there was 1 contig that wasn't assembled by mpspades - this created NAs in the mpspades data. removing all rows with ""
+filtered_mpspades_gene_fam = gene_fam_metadata[gene_fam_metadata$mpspades_detection != "", ]
+mpspades_genefam_matrix = table(filtered_mpspades_gene_fam$mpspades_detection, filtered_mpspades_gene_fam$accession)
+```
+
+```{r}
+rownames(mpspades_genefam_matrix)
+```
+
+```{r}
+  
+megahit_genefam_matrix = table(gene_fam_metadata$megahit_detection, gene_fam_metadata$accession)
+```
+
+```{r}
+rownames(megahit_genefam_matrix)
+```
+
+chi square test of independence - are the two categorical variables related?
+
+```{r}
+chisq.test(mpspades_genefam_matrix, simulate.p.value = TRUE, B=99999)
+# warning that the chi-squared approximate may be incorrect, due to the assumptions for using chi squared distributions: small expected cell frequencies in the contingency table 
+```
+
+```{r}
+chisq.test(megahit_genefam_matrix, simulate.p.value = TRUE, B = 99999)
+```
+
+Options:
+
+-   use fisher.test()
+
+-   or chisq.test(simulate.p.value = TRUE)
+
+```{r}
+fisher.test(mpspades_genefam_matrix, simulate.p.value = T)
+```
+
+```{r}
+fisher.test(megahit_genefam_matrix, simulate.p.value=T)
+```

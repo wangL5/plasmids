@@ -146,7 +146,7 @@ plot(f1_score_boxplot)
 F-1 score for all 9 plasmid classification tools compared against megahit and metaplasmidSPAdes assembly datasets (showing PlasX at 3 score threshold cut off points). No output for plasmidfinder because there were no True Positives predicted for either assembly dataset. F-1 score better for all classifiers using metaplasmidSPAdes assembly dataset. Plasx with 0.5 cut off had the highest F-1 score.
 
 ```{r}
-#| echo: False
+#| echo: false
 
 # CAMI2 Precision-Recall Figure
 library(ggplot2)
@@ -247,6 +247,8 @@ What do geNomad and plasX algorithms have in common? They both use gene families
 ##### Number of Genes:
 
 -   GC content
+
+-    \### plot GC content vs. contig size of original plasmid (there's supposed to be a correlation here), and then plot GC content vs. contig size and whether it was detected
 
 -   diversity in gene families? or type of gene families? (plasx data)
 

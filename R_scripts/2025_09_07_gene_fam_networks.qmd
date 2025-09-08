@@ -1,0 +1,20 @@
+---
+title: "2025_09_07_gene_fam_networks"
+format: html
+editor: visual
+---
+
+## Gene family networks
+
+Gene families derived from PlasX analysis: pfam, cog, or de novo mmseqs clustered gene families
+
+Question: Are there any gene families that are more represented in a detection group?
+
+Part of the larger question to understand why genomad and plasx were unable to detect 2 clusters of CAMI2 plasmids
+
+Will use network analysis to tease out patterns in accession,
+
+```{r}
+
+gene_fam_metadata = read.csv("gene_fams_metadata.txt", sep="\t")
+```
