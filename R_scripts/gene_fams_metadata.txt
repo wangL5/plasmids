@@ -709,40 +709,40 @@ RNODE_227_length_4381_cov_5.48337	de novo	mmseqs_5_1670594	detected	detected
 RNODE_227_length_4381_cov_5.48337	de novo	mmseqs_5_1351559	detected	detected
 RNODE_227_length_4381_cov_5.48337	de novo	mmseqs_5_1389755	detected	detected
 RNODE_537_length_3389_cov_22.49108	de novo	mmseqs_5_1727927	detected	detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_1736720		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_1679106		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_44374214		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_39987169		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_45244086		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_36483135		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_49540053		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_36446794		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_22582899		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_32916809		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_19000283		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_520934		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_34883723		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_4970157		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_37138889		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_20738465		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_36680256		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_39452610		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_25_18659210		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_25_33926419		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_25_45156277		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_25_48331010		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_41694189		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_37138889		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_21388829		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_24291355		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_38986826		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_28719539		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_49902367		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_38698923		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_34150744		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_28596		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_1486819		detected
-RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_1726892		detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_1736720	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_1679106	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_44374214	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_39987169	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_45244086	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_36483135	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_49540053	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_50_36446794	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_22582899	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_32916809	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_19000283	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_520934	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_40_34883723	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_4970157	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_37138889	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_20738465	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_36680256	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_30_39452610	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_25_18659210	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_25_33926419	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_25_45156277	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_25_48331010	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_41694189	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_37138889	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_21388829	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_24291355	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_38986826	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_28719539	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_49902367	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_38698923	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_34150744	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_28596	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_20_1486819	NA	detected
+RNODE_116_length_4192_cov_3.28201	de novo	mmseqs_5_1726892	NA	detected
 RNODE_468_length_1541_cov_8.66960	de novo	mmseqs_5_1687283	undetected_genomad	undetected_genomad
 RNODE_381_length_1819_cov_13.04118	de novo	mmseqs_30_454732	detected	detected
 RNODE_381_length_1819_cov_13.04118	de novo	mmseqs_20_454732	detected	detected
@@ -2134,11 +2134,11 @@ RNODE_227_length_4381_cov_5.48337	Pfam	PF03389.15	detected	detected
 RNODE_442_length_4465_cov_7.11694	COG14_FUNCTION	COG2433	detected	detected
 RNODE_442_length_4465_cov_7.11694	Pfam	PF03389.15	detected	detected
 RNODE_442_length_4465_cov_7.11694	Pfam	PF01051.21	detected	detected
-RNODE_116_length_4192_cov_3.28201	COG14_FUNCTION	COG0262		detected
-RNODE_116_length_4192_cov_3.28201	COG14_FUNCTION	COG1196		detected
-RNODE_116_length_4192_cov_3.28201	Pfam	PF01719.17		detected
-RNODE_116_length_4192_cov_3.28201	Pfam	PF01076.19		detected
-RNODE_116_length_4192_cov_3.28201	Pfam	PF00186.19		detected
+RNODE_116_length_4192_cov_3.28201	COG14_FUNCTION	COG0262	NA	detected
+RNODE_116_length_4192_cov_3.28201	COG14_FUNCTION	COG1196	NA	detected
+RNODE_116_length_4192_cov_3.28201	Pfam	PF01719.17	NA	detected
+RNODE_116_length_4192_cov_3.28201	Pfam	PF01076.19	NA	detected
+RNODE_116_length_4192_cov_3.28201	Pfam	PF00186.19	NA	detected
 RNODE_31_length_1357_cov_12.09363	Pfam	PF05732.11	undetected_genomad	undetected_genomad_plasx
 RNODE_585_length_3212_cov_16.01628	COG14_FUNCTION	COG2188	detected	detected
 RNODE_585_length_3212_cov_16.01628	COG14_FUNCTION	COG5527	detected	detected

@@ -75,3 +75,58 @@ fisher.test(mpspades_genefam_matrix, simulate.p.value = T)
 ```{r}
 fisher.test(megahit_genefam_matrix, simulate.p.value=T)
 ```
+
+9/10/2025
+
+The above data did not satisfy the assumptions for chi square. Took more aggregated data - detection_status x gene_fam_source (known, de novo, combination, or no fams):
+
+```{r}
+library(dplyr)
+library(tidyverse)
+```
+
+```{r}
+
+plasmid_metadata = read.csv("plasmid_CE_metadata.txt", sep="\t")
+```
+
+```{r}
+mpsp_plasmid_metadata = plasmid_metadata[plasmid_metadata$mpspades_detection != "", ]
+```
+
+```{r}
+mpsp_plasmid_metadata = mpsp_plasmid_metadata %>%
+  filter(known_status != "de novo" & known_status != "no fams")
+```
+
+```{r}
+mg_plasmid_metadata = plasmid_metadata %>% 
+  filter(known_status != "de novo" & known_status != "no fams")
+```
+
+```{r}
+mpspades_chi = table(mpsp_plasmid_metadata$mpspades_detection, mpsp_plasmid_metadata$known_status)
+```
+
+```{r}
+megahit_chi = table(mg_plasmid_metadata$megahit_detection, mg_plasmid_metadata$known_status)
+```
+
+```{r}
+mpspades_chi
+```
+
+```{r}
+megahit_chi
+```
+
+```{r}
+chisq.test(megahit_chi)
+```
+
+```{r}
+chisq.test(mpspades_chi)
+```
+
+\
+\

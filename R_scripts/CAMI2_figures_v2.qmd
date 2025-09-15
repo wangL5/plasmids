@@ -248,7 +248,7 @@ What do geNomad and plasX algorithms have in common? They both use gene families
 
 -   GC content
 
--    \### plot GC content vs. contig size of original plasmid (there's supposed to be a correlation here), and then plot GC content vs. contig size and whether it was detected
+-   \### plot GC content vs. contig size of original plasmid (there's supposed to be a correlation here), and then plot GC content vs. contig size and whether it was detected
 
 -   diversity in gene families? or type of gene families? (plasx data)
 
