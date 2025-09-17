@@ -200,9 +200,6 @@ colnames(megahit_data) <- clean_labels[colnames(megahit_data)]
 
 ```
 
-```         
-```
-
 ```{r}
 #| echo: false
 library(pheatmap)
@@ -250,16 +247,309 @@ What do geNomad and plasX algorithms have in common? They both use gene families
 
 -   \### plot GC content vs. contig size of original plasmid (there's supposed to be a correlation here), and then plot GC content vs. contig size and whether it was detected
 
+    -   plot plasx score/genoamad score against: GC content, contig length, num gene calls
+
 -   diversity in gene families? or type of gene families? (plasx data)
 
     -   Group 1 vs Group 2:
 
-        -   Are there less pfam/cog families? Are there more mmseqs families?
+        -   Are there less pfam/cog families? Are there more mmseqs families? no, there is no statistical difference
 
-        -   Is it more likely for it not to hit a pfam/cog/mmseqs family at all?
+        -   Is it more likely for it not to hit a pfam/cog/mmseqs family at all? no, there is no statistical difference
 
-        -   Are there certain pfam/cog/mmseqs families that are found more frequently in Group 2?
+        -   Are there certain pfam/cog/mmseqs families that are found more frequently in Group 2? **nothing statistically different**
+
+    -   **Summary:**
+
+        -   3 reference genomes did not have any pfam/cog/de novo family hits - these were not classified by genomad or plasx
+
+        -   1 reference genome not assembled by metaplasmidspades. This reference genome had 39 hits to pfam/cog/de novo fams
+
+        -   4 plasmid reference genomes did not have any known gene families (pfam or cag) hits. Of those 4 includes the 3 reference genomes that had no known or de novo gene family hits.
+
+        -   104/108 CAMI plasmids had at least 1 hit to a pfam/cog family. Most of these plasmids had genes in "known" gene families. 73/108 had at least 1 hit to an mmseqs de novo gene cluster
+
+            -   no significant difference in detection groups in the plasmids w/o a hit to a de novo gene family
+
+            -   status combined: 72 reference genomes
+
+            -   known only: 32 reference genomes
+
+            -   no fams: 3 reference genomes
+
+            -   de novo fam only: 1 reference genome
+
+```{r}
+# read in mpspades query_target metadata file 
+
+mpspades_query_target = read.csv("query_target_metadata_mpSPAdes_all.txt", sep="\t")
+```
+
+```{r}
+# set NAs to zero
+mpspades_query_target[is.na(mpspades_query_target)] = 0
+```
+
+```{r}
+library(ggplot2)
+library(pals)
+library(ggpmisc)
+
+mpspades_plasmid_contig_detect <- ggplot(mpspades_query_target, aes(x = contig_length, y = num_gene_calls_contig, color = mpspades_detection, group = mpspades_detection)) + scale_color_manual(values=unname(alphabet()), labels = clean_labels) +
+  geom_point(alpha = 0.7, size=2) +
+  #stat_ellipse(aes(fill = mpspades_detection), alpha = 0.1, type = "norm", level = 0.95) +
+  #geom_smooth(method = "lm", se = TRUE, alpha = 0.2, linewidth = 1) + 
+  #stat_poly_eq(aes(label = paste(after_stat(eq.label), after_stat(rr.label), sep = "*\", \"*")), 
+               #formula = y ~ x, parse = TRUE, size = 3) +
+  labs(
+    title = "Gene Calls (contigs) vs. Contig Length",
+    x = "Contig Length",
+    y = "Number of Gene Calls (contig)",
+    color = "detection status"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "bottom",
+    plot.title = element_text(hjust=0.5)
+  )
+plot(mpspades_plasmid_contig_detect)
+
+```
+
+-   Many of the plasX contigs were marked with 0 score, due to having no hits to pfam/cog/de novo gene families
+
+    ```{r}
+    library(vegan)
+    library(pairwiseAdonis)
+
+    # analyze the centroids of scatter plots --> looking at contig_length vs. num gene calls
+    # create distance matrix and test centroid differences
+    dist_matrix <- dist(mpspades_query_target[, c("contig_length", "num_gene_calls_contig")])
+    #adonis2(dist_matrix ~ mpspades_detection, data = mpspades_query_target)
+
+    # centroids are significantly different 
+    #          Df   SumOfSqs      R2      F Pr(>F)    
+    # Model      2  856330655 0.10624 43.863  0.001 ***
+    # Residual 738 7203980343 0.89376                  
+    # Total    740 8060310997 1.00000   
+
+    pairwise_adonis <- pairwise.adonis(dist_matrix, mpspades_query_target$mpspades_detection)
+    print(pairwise_adonis)
+
+    # detected vs. undetected genomad plasx: F.model = 67.93, p adjusted = 0.003
+    # detected vs. undetected genomad: F.model = 21.37, p.adjusted = 0.003
+    # undetected genomad plasx vs. undetected genomad: F.model = 43.80460, p.adjusted = 0.003
+    ```
+
+-   To further visualize these plasmid circular element groupings (detected, undetected_genomad, undetected_genomad_plasx \[cut off at 0.9)\], some boxplots of various metadata:
+
+    ```{r}
+    plasmid_CE_annotations <- read.csv("plasmid_CE_metadata.txt", sep="\t")
+
+    library(ggplot2)
+    library(tidyverse)
+
+    plasmid_CE_long <- plasmid_CE_annotations %>% 
+      select(mpspades_detection, GC_content, num_gene_calls) %>%
+      pivot_longer(cols = c(GC_content, num_gene_calls),
+                   names_to = "metric",
+                   values_to = "value")
+    # drop #N/A
+    plasmid_CE_long_filtered <- plasmid_CE_long[plasmid_CE_long$mpspades_detection != "", ]
+    ```
+
+    metaplasmidspades boxplots comparing plasmid reference genome metadata
+
+    ```{r}
+    ggplot(plasmid_CE_long_filtered, aes(x = mpspades_detection, y = value, fill = mpspades_detection)) +
+      geom_boxplot(alpha = 0.7) +
+      scale_fill_manual(values = c("detected" = "blue", 
+                                   "undetected_genomad" = "darkorange",
+                                   "undetected_genomad_plasx" = "red")) +
+      labs(title = "Plasmid characteristics by detection group (mpspades)", fill = "Detection Status") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "bottom",
+            strip.text = element_text(size = 11, face = "bold"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank()) +
+      facet_wrap(~ metric, scales = "free_y", nrow = 1,
+                 labeller = labeller(metric = c( 
+                                               "GC_content" = "GC Content (%)", 
+                                               "num_gene_calls" = "Number of Gene Calls")))
+    ```
+
+    -   gene calls: ANOVA p = 0.012, T-K posthoc, p = 0.016 for undetected_genomad_plasx vs. detected
+
+    -   GC content: (variance significantly different, using KW) - p = 0.0001
+
+-   megahit boxplots comparing plasmid reference genome metadata
+
+    ```{r}
+    plasmid_CE_long_megahit <- plasmid_CE_annotations %>% 
+      select(megahit_detection, GC_content, num_gene_calls) %>%
+      pivot_longer(cols = c(GC_content, num_gene_calls),
+                   names_to = "metric",
+                   values_to = "value")
+
+    ggplot(plasmid_CE_long_megahit, aes(x = megahit_detection, y = value, fill = megahit_detection)) +
+      geom_boxplot(alpha = 0.7) +
+      scale_fill_manual(values = c("detected" = "blue", 
+                                   "undetected_genomad" = "darkorange",
+                                   "undetected_genomad_plasx" = "red")) +
+      labs(title = "Plasmid characteristics by detection group (megahit)", fill = "Detection Status") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+            plot.title = element_text(hjust = 0.5),
+            legend.position = "bottom",
+            strip.text = element_text(size = 11, face = "bold"),
+            axis.title.x = element_blank(),
+            axis.title.y = element_blank()) +
+      facet_wrap(~ metric, scales = "free_y", nrow = 1,
+                 labeller = labeller(metric = c("GC_content" = "GC Content (%)", 
+                                               "num_gene_calls" = "Number of Gene Calls")))
+    ```
+
+-   gene calls: ANOVA p = 0.011
+
+    -   undetected_genomad_plasx vs. detected: p = 0.0199
+
+-   GC content: (variance significantly different, using KW): p = 0.018, Games-Howell posthoc:
+
+    -   detected vs. undetected genomad_plasx: 0.005
+
+    -   undetected_genomad vs. undetected genomad_plasx: 0.000255
+
+```{r}
+# creating a new binary variable (for both megahit and mpspades) to look at differences between detected and undetected
+
+plasmid_CE_annotations <- read.csv("plasmid_CE_metadata.txt", sep="\t")
+
+plasmid_CE_annotations_mpspades <- plasmid_CE_annotations
+
+plasmid_CE_annotations_mpspades <- plasmid_CE_annotations_mpspades[plasmid_CE_annotations_mpspades$mpspades_detection != "", ]
+
+plasmid_CE_annotations_mpspades$mpspades_binary <- ifelse(
+  plasmid_CE_annotations_mpspades$mpspades_detection == "detected", 
+  "detected", 
+  "undetected"
+)
+
+```
+
+```{r}
+plasmid_CE_annotations$megahit_binary <- ifelse(
+  plasmid_CE_annotations$megahit_detection == "detected", 
+  "detected", 
+  "undetected"
+)
+```
+
+```{r}
+plasmid_CE_long_megahit_binary <- plasmid_CE_annotations %>% 
+  select(megahit_binary, GC_content, num_gene_calls) %>%
+  pivot_longer(cols = c(GC_content, num_gene_calls),
+               names_to = "metric",
+               values_to = "value")
+
+plasmid_CE_long_mpspades_binary <- plasmid_CE_annotations_mpspades %>% 
+  select(mpspades_binary, GC_content, num_gene_calls) %>%
+  pivot_longer(cols = c(GC_content, num_gene_calls),
+               names_to = "metric",
+               values_to = "value")
+```
+
+```{r}
+ggplot(plasmid_CE_long_mpspades_binary, aes(x = mpspades_binary, y = value, fill = mpspades_binary)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("detected" = "blue", 
+                               "undetected" = "red")) +
+  labs(title = "Plasmid characteristics by detection group (mpspades)", fill = "Detection Status") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  facet_wrap(~ metric, scales = "free_y", nrow = 1,
+             labeller = labeller(metric = c( 
+                                           "GC_content" = "GC Content (%)", 
+                                           "num_gene_calls" = "Number of Gene Calls")))
+```
+
+```{r}
+wilcox.test(GC_content ~ mpspades_binary, data = plasmid_CE_annotations_mpspades)
+
+# p = 0.9699
+# W = 1409.5
+```
+
+```{r}
+wilcox.test(num_gene_calls ~ mpspades_binary, data = plasmid_CE_annotations_mpspades)
+
+# p = 6.524e-05
+# W = 2030
+```
+
+```{r}
+wilcox.test(GC_content ~ megahit_binary, data = plasmid_CE_annotations)
+
+# W = 1416.5
+# p = 0.9554
+```
+
+```{r}
+wilcox.test(num_gene_calls ~ megahit_binary, data = plasmid_CE_annotations)
+
+# p = 4.696e-05
+# W = 2073.5
+```
+
+```{r}
+ggplot(plasmid_CE_long_megahit_binary, aes(x = megahit_binary, y = value, fill = megahit_binary)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_fill_manual(values = c("detected" = "blue", 
+                               "undetected" = "red")) +
+  labs(title = "Plasmid characteristics by detection group (megahit)", fill = "Detection Status") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "bottom",
+        strip.text = element_text(size = 11, face = "bold"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+  facet_wrap(~ metric, scales = "free_y", nrow = 1,
+             labeller = labeller(metric = c("GC_content" = "GC Content (%)", 
+                                           "num_gene_calls" = "Number of Gene Calls")))
+```
+
+GC content plotted against num gene calls
+
+```{r}
+GC_num_genes_mpspades <- ggplot(plasmid_CE_annotations_mpspades, aes(x = num_gene_calls, y = contig_length, size = GC_content, color = mpspades_detection, group = mpspades_detection)) + scale_color_manual(values=unname(alphabet()), labels = clean_labels) +
+  geom_point(alpha = 0.7, size=2) +
+  #geom_smooth(method = "lm", se = TRUE, alpha = 0.2, linewidth = 1) + 
+  #stat_poly_eq(aes(label = paste(after_stat(eq.label), after_stat(rr.label), sep = "*\", \"*")), 
+               #formula = y ~ x, parse = TRUE, size = 3) +
+  labs(
+    title = "Reference Genome GC content vs. Num Gene Calls",
+    x = "num gene calls",
+    y = "GC content",
+    color = "detection status (mpspades)",
+    size = "contig_length"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "bottom",
+    plot.title = element_text(hjust=0.5)
+  )
+plot(GC_num_genes_mpspades)
+```
 
 -   Tetranucleotide frequencies
 
-    -   after calculating the tetranucleotide frequencies - map them somehow?
+    -   after calculating the tetranucleotide frequencies - PCA? It would provide further information on genomad.
