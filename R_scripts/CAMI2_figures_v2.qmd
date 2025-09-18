@@ -94,7 +94,34 @@ mapping_dot_plot <- ggplot(mapping_data_transformed, aes(x = Sample_Number, y=Ta
 print(mapping_dot_plot)
 ```
 
-This figure shows that while most of the megahit contig mappings back to the CAMI2 reference genomes were 1:1, there were other reference genomes that were fragmented during megahit assembly. Mapping coverage ranged from X to X%. **###REMAKE AS HEATMAP###**
+```{r}
+# doing it as a heatmap instead
+
+library(tidyr)
+library(tidyverse)
+
+megahit_fragment_wide <- mapping_data_transformed %>%
+  pivot_wider(id_cols = Target_Sequence, names_from = Sample_Number, values_from = log_val) %>%
+  column_to_rownames(var = "Target_Sequence") %>%
+  as.matrix()
+```
+
+```{r}
+# make heatmap 
+
+library(pheatmap)
+library(viridis)
+
+pheatmap(megahit_fragment_wide, 
+         main = "Megahit Contigs per CAMI2 Plasmid Reference Genome", 
+         show_rownames = FALSE,
+         scale = "none",
+         cluster_cols = FALSE,
+         cluster_rows = FALSE,
+         legend_title = "Log10 Contig Count")
+```
+
+This figure shows that while most of the megahit contig mappings back to the CAMI2 reference genomes were 1:1, there were other reference genomes that were fragmented during megahit assembly. Mapping coverage ranged from X to X%.
 
 #### Megahit contig recruitment plots \### MAKE RECRUITMENT PLOT or COVERAGE PLOT \#
 
