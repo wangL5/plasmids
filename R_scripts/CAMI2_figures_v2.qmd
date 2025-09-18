@@ -320,17 +320,16 @@ mpspades_query_target[is.na(mpspades_query_target)] = 0
 ```{r}
 library(ggplot2)
 library(pals)
-library(ggpmisc)
 
-mpspades_plasmid_contig_detect <- ggplot(mpspades_query_target, aes(x = contig_length, y = num_gene_calls_contig, color = mpspades_detection, group = mpspades_detection)) + scale_color_manual(values=unname(alphabet()), labels = clean_labels) +
+mpspades_plasmid_contig_detect <- ggplot(mpspades_query_target, aes(x = log(contig_length), y = num_gene_calls_contig, color = mpspades_detection, group = mpspades_detection)) + scale_color_manual(values=unname(alphabet()), labels = clean_labels) +
   geom_point(alpha = 0.7, size=2) +
-  #stat_ellipse(aes(fill = mpspades_detection), alpha = 0.1, type = "norm", level = 0.95) +
+  stat_ellipse(aes(fill = mpspades_detection), alpha = 0.5, type = "norm", level = 0.95) +
   #geom_smooth(method = "lm", se = TRUE, alpha = 0.2, linewidth = 1) + 
   #stat_poly_eq(aes(label = paste(after_stat(eq.label), after_stat(rr.label), sep = "*\", \"*")), 
                #formula = y ~ x, parse = TRUE, size = 3) +
   labs(
-    title = "Gene Calls (contigs) vs. Contig Length",
-    x = "Contig Length",
+    title = "Gene Calls (mpspades contigs) vs. Contig Length",
+    x = "Contig Length (Log Transformed)",
     y = "Number of Gene Calls (contig)",
     color = "detection status"
   ) +
@@ -575,6 +574,74 @@ GC_num_genes_mpspades <- ggplot(plasmid_CE_annotations_mpspades, aes(x = num_gen
     plot.title = element_text(hjust=0.5)
   )
 plot(GC_num_genes_mpspades)
+```
+
+Making contig size vs. num genes vs. detection for megahit
+
+```{r}
+megahit_query_target = read.csv("query_target_metadata_megahit_all.txt", sep="\t")
+```
+
+```{r}
+library(ggplot2)
+library(pals)
+library(ggpmisc)
+
+megahit_plasmid_contig_detect <- ggplot(megahit_query_target, aes(x = genomad_score, y = num_gene_calls_contig, color = megahit_detection, group = megahit_detection)) + scale_color_manual(values=unname(alphabet()), labels = clean_labels) +
+  geom_point(alpha = 0.7, size=2) +
+  # stat_ellipse(aes(fill = megahit_detection), alpha = 0.5, type = "norm", level = 0.95) +
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.2, linewidth = 1) + 
+  stat_poly_eq(aes(label = paste(after_stat(eq.label), after_stat(rr.label), sep = "*\", \"*")), 
+               formula = y ~ x, parse = TRUE, size = 3) +
+  labs(
+    title = "Gene Calls (megahit contigs) vs. Genomad Score",
+    x = "Genomad Score",
+    y = "Number of Gene Calls (contig)",
+    color = "detection status"
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    legend.position = "bottom",
+    plot.title = element_text(hjust=0.5)
+  )
+plot(megahit_plasmid_contig_detect)
+
+
+```
+
+```{r}
+library(vegan)
+library(pairwiseAdonis)
+# this is for megahit contigs num genes vs. length
+# analyze the centroids of scatter plots --> looking at contig_length vs. num gene calls
+# create distance matrix and test centroid differences
+dist_matrix_megahit <- dist(megahit_query_target[, c("contig_length", "num_gene_calls_contig")])
+adonis2(dist_matrix_megahit ~ megahit_detection, data = megahit_query_target)
+
+# adonis2(formula = dist_matrix_megahit ~ megahit_detection, data = megahit_query_target)
+#            Df   SumOfSqs      R2      F Pr(>F)    
+# Model       2 7.8836e+08 0.06313 44.944  0.001 ***
+# Residual 1334 1.1700e+10 0.93687                  
+# Total    1336 1.2488e+10 1.00000                  
+# ---
+# Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+```
+
+```{r}
+pairwise_adonis_megahit <- pairwise.adonis(dist_matrix_megahit, megahit_query_target$megahit_detection)
+print(pairwise_adonis_megahit)
+
+# > print(pairwise_adonis_megahit)
+#                                            pairs Df SumsOfSqs  F.Model
+# 1           detected vs undetected_genomad_plasx  1 771143059 75.67490
+# 2                 detected vs undetected_genomad  1 156316543 14.10914
+# 3 undetected_genomad_plasx vs undetected_genomad  1 131241175 66.16469
+#           R2 p.value p.adjusted sig
+# 1 0.06686982   0.001      0.003   *
+# 2 0.01341034   0.001      0.003   *
+# 3 0.10335573   0.001      0.003   *
 ```
 
 -   Tetranucleotide frequencies
