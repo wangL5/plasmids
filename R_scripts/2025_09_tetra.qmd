@@ -1,0 +1,121 @@
+---
+title: "2025_09_tetra_plasmid"
+format: html
+editor: visual
+---
+
+## Tetranucleotide similarity analysis
+
+9/19/2025
+
+Took the 108 CAMI2 plasmids and ran them through anvi-compute-genome-similarity –method TETRA to create a tetranucleotide similarity matrix between each of the 108 plasmids
+
+```{r}
+tetra <- read.csv("TETRA_correlations.txt", header=TRUE, row.names=1, sep="\t")
+```
+
+You can add options to executable code like this
+
+```{r}
+library(MASS)
+dist_matrix <- as.dist(1 - tetra)
+```
+
+```{r}
+mds_result <- isoMDS(dist_matrix, k = 2)
+
+mds_coords <- data.frame(
+  Plasmid = rownames(tetra),
+  MDS1 = mds_result$points[,1],
+  MDS2 = mds_result$points[,2]
+)
+```
+
+```{r}
+anvio_metadata <- read.csv("plasmid_CE_metadata_anvio.txt", sep="\t", header=TRUE
+```
+
+```{r}
+# merge the MSD table with the metadata
+
+mds_with_metadata <- merge(mds_coords, anvio_metadata, by.x="Plasmid", by.y="genome_id", all.x=TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Calculate group centroids
+#centroids <- mds_with_metadata %>%
+#  group_by(megahit_detection) %>% 
+#  summarise(
+#    centroid_MDS1 = mean(MDS1, na.rm = TRUE),
+#    centroid_MDS2 = mean(MDS2, na.rm = TRUE),
+#    .groups = 'drop'
+#  )
+
+
+ggplot(mds_with_metadata, aes(x = MDS1, y = MDS2, color=megahit_detection, shape = megahit_detection)) +
+  geom_point(size = 3, alpha = 0.7) +
+    #geom_point(data = centroids, 
+             #aes(x = centroid_MDS1, y = centroid_MDS2, fill = megahit_detection),
+             #shape = 23, size = 6, color = "black", stroke = 1) + 
+  labs(title = "MDS of Plasmids Based on Tetranucleotide Similarity",
+       x = "MDS Dimension 1", y = "MDS Dimension 2") +
+  theme_minimal() + theme(legend.title = element_text(size=12),
+                          plot.title = element_text(hjust=0.5))
+```
+
+```{r}
+# filter out the one blank - one blank CE for mpspades 
+library(dplyr)
+print(nrow(mds_with_metadata))
+mds_with_metadata_mpspades <- mds_with_metadata %>%
+  filter(mpspades_detection != "")
+print(nrow(mds_with_metadata_mpspades))
+```
+
+```{r}
+ggplot(mds_with_metadata_mpspades, aes(x = MDS1, y = MDS2, color=mpspades_detection, shape = mpspades_detection)) +
+  geom_point(size = 3, alpha = 0.7) +
+    #geom_point(data = centroids, 
+             #aes(x = centroid_MDS1, y = centroid_MDS2, fill = megahit_detection),
+             #shape = 23, size = 6, color = "black", stroke = 1) + 
+  labs(title = "MDS of Plasmids Based on Tetranucleotide Similarity",
+       x = "MDS Dimension 1", y = "MDS Dimension 2") +
+  theme_minimal() + theme(legend.title = element_text(size=12),
+                          plot.title = element_text(hjust=0.5))
+```
+
+```{r}
+library(pairwiseAdonis)
+
+mds_dist_mpspades <- dist(mds_with_metadata_mpspades[, c("MDS1", "MDS2")])
+pairwise_result_mpspades <- pairwise.adonis(mds_dist_mpspades, 
+                                   mds_with_metadata_mpspades$mpspades_detection,
+                                   perm = 999)
+print(pairwise_result_mpspades)
+
+mds_dist_megahit <- dist(mds_with_metadata[, c("MDS1", "MDS2")])
+pairwise_result_megahit <- pairwise.adonis(mds_dist_megahit, 
+                                   mds_with_metadata$megahit_detection,
+                                   perm = 999)
+print(pairwise_result_megahit)
+
+```
+
+mpspades:
+
+detected vs. undetected_genomad_plasx: F = 6.01, p adj = 0.015
+
+detected vs. undetected_genomad: F = 0.66, p adj = 1.00
+
+undetected_genomad_plasx vs. undetected_genomad: F = 1.44, p adj = 0.672
+
+megahit:
+
+detected vs. undetected_genomad_plasx: F = 9.68, p adj = 0.003
+
+detected vs. undetected_genomad: F = 1.02, p adj = 1.000
+
+undetected_genomad_plasx vs. undetected_genomad: F = 5.08, p adj = 0.024
