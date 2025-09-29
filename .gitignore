@@ -4,3 +4,5 @@
 .Ruserdata
 plasx_CEs/*.txt
 R_scripts/out_of_date_figures
+R_scripts/.RData
+R_scripts/.Rhistory
